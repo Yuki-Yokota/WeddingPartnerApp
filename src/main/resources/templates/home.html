@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('ホーム画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+</head>
+<body>
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>ホーム</h1>
+	  		<form th:action="@{/home}" method="post">
+	  			1. <button name="action" value="CUSTOMER">顧客管理</button>
+				<br />
+				<!-- 契約選択時モーダルでcustomerIdを選びたい -->
+				2. <button name="action" value="CONTRACT">契約</button>
+				<br />
+				<!-- 顧客ID選択ボックス -->
+				<select name="selectCustomerId">
+					<option th:each="cus : ${customerList}"
+				            th:value="${cus.customerId}"
+				            th:text="${cus.customerId}">
+				    </option>
+				</select>
+				<br />
+				※契約画面へ遷移時必須です
+				<br />
+				3. <button name="action" value="WEDDING">式管理</button>
+				<br>
+				4. <button name="action" value="GUEST">ゲスト管理</button>
+				<br />
+				<!-- 式ID選択ボックス -->
+				<select name="selectWeddingId">
+					<option th:each="wed : ${weddingList}"
+				            th:value="${wed.weddingId}"
+				            th:text="${wed.weddingId}">
+				    </option>
+				</select>
+				<br />
+				※ゲスト画面へ遷移時必須です
+				<br />
+				
+				<!-- 管理者のみ表示したい -->
+				<button name="action" value="USER">ユーザ管理</button>
+			</form>
+			
+	  		<br />
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	 </div>
+</body>
+</html>

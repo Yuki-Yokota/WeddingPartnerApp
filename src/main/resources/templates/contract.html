@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('契約画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/contract.js}"></script>
+   </th:block>
+</head>
+<body >
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	  	
+		<div th:fragment="content">
+			<form id="inputCondition" action="@{/api/contract}" method="post" style="display:block;">
+				<div id="subject"><h1>条件入力画面</h1></div>
+		        <br />
+				<span class="font-red">※必須事項</span>
+				<br />
+				<table border=1>
+					<tr>
+						<td>人数</td>
+						<td colspan="2">
+							<input type="text" name="numofperson" />
+							<br />
+		        			<span id="numOfPersonValid" class="valid-error"></span>
+						</td>
+					</tr>
+					<tr>
+						<td>会場</td>
+						<td colspan="2">
+							<!-- 会場名選択ボックス -->
+							<select name="selectVenueName" onchange="sendGetForm(this)">
+								<option th:each="venname : ${venueNameList }" 
+										th:value="${venname}"
+										th:text="${venname}">
+								</option>
+							</select>
+							<br />
+		        			<span id="venueNameValid" class="valid-error"></span>
+						</td>
+					</tr>
+					<tr>
+						<td>式形態</td>
+						<td colspan="2">
+							<!-- 式形態選択ボックス -->
+							<select name="selectWeddingType" disabled>
+								<option th:each="typename : ${weddingTypeList }" 
+										th:value="${typename}"
+										th:text="${typename}">
+								</option>
+							</select>
+							<h5>※会場選択後に式形態を選択できます。</h5>
+						</td>
+					</tr>
+					<tr>
+						<td>日時</td>
+						<td colspan="2">
+							<input type="date" name="weddingdate" />
+							<br />
+		        			<span id="weddingDateValid" class="valid-error"></span>
+						</td>
+					</tr>
+					<tr>
+						<td>料理</td>
+						<td colspan="2">
+							<!-- 料理金額選択ボックス -->
+							<select name="selectDish">
+								<option th:each="dish : ${dishAmountList }" 
+										th:value="${dish}"
+										th:text="${#numbers.formatInteger(dish, 3, 'COMMA')}">
+								</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>ドリンク</td>
+						<td colspan="2">
+							<select name="selectDrink">
+								<!-- ドリンク金額選択ボックス -->
+								<option th:each="drink : ${drinkAmountList }" 
+									th:value="${drink}"
+									th:text="${#numbers.formatInteger(drink, 3, 'COMMA')}">
+								</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td rowspan="2">衣装</td>
+						<td>新郎</td>
+						<td>新婦</td>
+					</tr>
+					<tr>
+						<td>
+							<!-- 新郎ドレス金額選択ボックス -->
+							<select name="selectGroomDress">
+								<option th:each="groomDress : ${groomDressAmountList }" 
+										th:value="${groomDress}"
+										th:text="${#numbers.formatInteger(groomDress, 3, 'COMMA')}">
+								</option>
+							</select>
+						</td>
+						<td>
+							<!-- 新婦ドレス金額選択ボックス -->
+							<select name="selectBrideDress">
+								<option th:each="brideDress : ${brideDressAmountList }" 
+									th:value="${brideDress}"
+									th:text="${#numbers.formatInteger(brideDress, 3, 'COMMA')}">
+								</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+				<br />
+				オプション
+				<br />
+				<table border=1 class="user-table">
+					<tr>
+						<td>写真撮影</td>
+						<td>
+							<select name="selectPhotoShoot">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>映像撮影</td>
+						<td>
+							<select name="selectVideoShoot">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>装花</td>
+						<td>
+							<select name="selectFlowerArrangement">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>引き出物</td>
+						<td>
+							<select name="selectGift">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>音響</td>
+						<td>
+							<select name="selectAcoustic">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>ヘアメイク</td>
+						<td>
+							<select name="selectHairMakuUp">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>司会者</td>
+						<td>
+							<select name="selectModerator">
+								<option value="true">あり</option>
+								<option value="false">なし</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>その他入力欄</td>
+						<td>
+							<textarea name="other" cols="40" rows="10"></textarea>
+						</td>
+					</tr>
+				</table>
+				<br />
+				<button id="estBtn" type="button" onclick="sendPostForm(this)">見積り画面へ</button>
+				<div id="totalAmountArea" style="display:none;">
+					<input type="hidden" id="contractId">
+					総計
+					<br />
+					<table border=1 class="user-table">
+						<tr>
+							<td>
+								予想見積額
+							</td>
+							<td>
+								<div id="totalAmount"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								予想自己負担額
+							</td>
+							<td>
+								<div id="ownExpense"></div>
+							</td>
+						</tr>
+					</table>
+					※ケーキ代35,000円、サービス料:合計×10%、消費税10%を含みます
+					<br />
+					※「予想自己負担額 = 予想見積額 - 30,000 × 人数」で算出しています。
+					<br />
+					<button type="button" id="estimate" onclick="sendGetPDFForm(this)">見積明細出力</button>
+					<button type="button" id="compContract" onclick="sendPutForm(this)">契約</button>
+				</div>
+			</form>
+			<form id="complete" style="display:none;">
+				契約締結しました。
+				<br>
+				「ホームへ戻る」ボタンを押下してください。
+			</form>
+			<form th:action="@{/home}" method="post">
+				<button>ホームへ戻る</button>
+			</form>
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

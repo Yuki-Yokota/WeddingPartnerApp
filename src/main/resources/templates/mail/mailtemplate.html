@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head>
+   <title>会場へお越しのお客様へアレルギーアンケート入力のご依頼</title>
+   <meta charset="UTF-8">
+</head>
+<body>
+	<div style="background-color: gray;">
+	</div>
+	<input id="guestId" type="hidden" value="${guestId}" />
+	<br />
+	${guestName}様
+	<br />
+	この度${groomName}様、${brideName}様の式にご参加いただけることになり誠に感謝申し上げます。
+	<br />
+	~~社${venueName}式場担当プランナー${userName}です。
+	<br />
+	当式場では披露宴でお料理を出すため事前にアレルギー調査をしております。
+	<br />
+	そのためお忙しいところ恐縮ですがアンケートに回答いただけないでしょうか。
+	<h2>アレルギーアンケート回答フォームへのURLはこちら</h2>
+	<a th:href="@{${destinationUrl}}">${destinationUrl}</a>
+	<br />
+	■回答に要する時間　約3分程度
+	<br />
+	[注意事項]
+	<br />
+	・本メールは送信専用のメールアドレスから配信されています。
+	<br />
+	・本メールへの返信できませんのでご了承ください。
+	<br />
+	・本メールにお心当たりのない方は、恐れ入りますが破棄をお願いいたします。
+	<br />
+	<br />
+	ご不明な点のある方は、お問い合わせください。
+	<br />
+	■お問い合わせ先■
+	<br />
+	${phoneNumber}(式場電話番号)
+  	<div>
+		<p>© 2026 Common Footer</p>
+	</div>
+</body>
+</html>

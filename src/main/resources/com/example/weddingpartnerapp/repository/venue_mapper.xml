@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.VenueMapper">
+	<resultMap id="venueResultMap" type="Venue">
+		<id property = "venueId" column="VENUE_ID"/>
+		<result property = "venueName" column="VENUE_NAME"/>
+		<result property = "phoneNumber" column="PHONE_NUMBER"/>
+		<result property = "venueAmount" column="VENUE_AMOUNT"/>
+	</resultMap>
+	<resultMap id="weddingTypeResultMap" type="WeddingType">
+		<id property = "weddingTypeId" column="WEDDING_TYPE_ID"/>
+		<result property = "weddingTypeName" column="WEDDING_TYPE_NAME"/>
+		<result property = "weddingTypeAmount" column="WEDDING_TYPE_AMOUNT"/>
+	</resultMap>
+	
+	<select id="findAllVenue" resultMap="venueResultMap">
+		select * from venues
+	</select>
+	<select id="findById" resultMap="venueResultMap">
+		select * from venues WHERE venue_id = #{venueId}
+	</select>
+	<select id="findByName" resultMap="venueResultMap">
+		select * from venues WHERE venue_name = #{venueName}
+	</select>
+	<select id="findAllWeddingType" resultMap="weddingTypeResultMap">
+		SELECT * FROM venues V
+				LEFT OUTER JOIN venues_wedding_types VW ON V.venue_id = VW.venue_id
+				LEFT OUTER JOIN wedding_types WT ON VW.wedding_type_id = WT.wedding_type_id
+				WHERE V.venue_name = #{venueName}
+	</select>
+</mapper>

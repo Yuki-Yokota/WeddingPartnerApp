@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('ゲスト画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/guest.js}"></script>
+   </th:block>
+</head>
+<body>
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>ゲスト</h1>
+	        <form th:action="@{/csv}" id="exportCSV" method="get" style="display:block;">
+				<button type="button" data-next="GUEST" onclick="sendGetCSVForm(this)">CSV出力</button>
+			</form>
+	  		<form th:action="@{/api/guest}" id="guestForm" method="post">
+	  			更新・削除・メール配信を個人にする場合はチェックボックスを押下お願いします。
+	  			<br />
+	  			<input type="hidden" id="page" name="page" th:value="${pageNum !=null ? pageNum : 1}">
+				<input type="hidden" id="totalPages">
+				<button type="button" data-next="REGISTER_FORM" onclick="sendGetForm(this)">ゲスト登録</button>
+	  			<button type="button" data-next="UPDATE_FORM" onclick="sendGetForm(this)">ゲスト更新</button>
+	  			<button type="button" data-next="DELETE_FORM" onclick="sendGetForm(this)">ゲスト削除</button>
+	  			<button type="button" data-next="CSV_IMPORT_FORM" onclick="sendGetForm(this)">CSV読込</button> ※登録時推奨
+	  			<button type="button" data-next="MAIL_DISTRIBUTION_FORM" onclick="sendGetForm(this)">メール配信</button>
+				<table border=1 class="guest-table">
+					<tr>
+						<td />
+						<!-- ソート -->
+						<td>ゲストID<button type="button" data-sort="ASC,guestId" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,guestId" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<td>ゲスト名<button type="button" data-sort="ASC,guestName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,guestName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- ゲスト名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="guestName">
+							<button type="button" onclick="sendGetForm(this)">検索</button>
+						<td>メールアドレス<button type="button" data-sort="ASC,mailAddress" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,mailAddress" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>出欠<button type="button" data-sort="ASC,attendance" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,attendance" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>アンケート回答有無<button type="button" data-sort="ASC,ansFlg" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,ansFlg" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>ゲストアレルギー情報</td>
+						
+					</tr>
+					<tbody id="guestTableBody">
+						<tr th:each="guest : ${guestList }" th:object="${guest}">
+							<td><input type="checkbox" name="selected"
+								th:value="*{guestId }" onchange="onChecked(this)" />
+							<td th:text="*{guestId }" />
+							<td th:text="*{guestName }" />
+							<td th:text="*{mailAddress }" />
+							<td th:text="*{attendance }" />
+							<td th:text="*{ansFlg }" />
+							<td><button type="button" th:data-guestid="${guest.guestId }" onclick="sendGetForm(this)">詳細</button></td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- テーブルテンプレート -->
+				<template id="guestTableTemplate">
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+					</tr>
+				</template>
+				<!-- ページネーションリンク -->
+				<div class="pagenation">
+					<span class="prev-page" >
+						<button type="button" th:data-page="${pageNum - 1 }"
+							th:if ="${pageNum > 1 }" onclick="sendGetForm(this)">前のページ</button>
+					</span>
+					<span class="current-page" >
+						<button type="button" th:data-page="${i}" th:each = "i : ${#numbers.sequence(1,totalPages)}"
+						th:text="${i}" onclick="sendGetForm(this)"></button>
+					</span>
+					<span class="next-page" >
+						<button type="button" th:data-page="${pageNum + 1 }"
+							th:if ="${pageNum < totalPages}" onclick="sendGetForm(this)">次のページ</button>
+					</span>
+				</div>
+				<!-- アレルギー表示モーダル -->
+				<div id="AllergyModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<label>アレルギー情報</label>
+							<br />
+							<textarea name="other" cols="40" rows="10" disabled></textarea>
+							<br />
+							<label>注意事項</label>
+							<br />
+							<textarea name="precaution" cols="40" rows="10" disabled></textarea>
+							<div>※任意</div>
+							<br>
+						</div>
+					</div>
+				</div>
+				<input type="hidden" id="checkedId">
+				<!-- 登録・更新モーダル -->
+				<div id="guestRegisterUpdateModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<div>
+			       				姓・名の順です
+			       				<br />
+			           			<label for="guestName">ゲスト名：</label>
+			           			<input type="text" name="guestFirstName" size=6/> <input type="text" name="guestLastName" size=6/>
+			           			<span class="font-red">※必須</span>
+			           			<br />
+			            		<span id="guestNameValid" class="valid-error"></span>
+			            	</div>
+		       				<br />
+		       				<div>
+			           			<label for="mailAddress">メールアドレス：</label>
+			           			<input type="text" name="mailAddress" size=15/>
+			           			<span class="font-red">※必須</span>
+			           			<br />
+			            		<span id="mailAddressValid" class="valid-error"></span>
+			           		</div>
+		       				<br />
+		       				<div>
+			           			<label for="attendance">出欠：</label>
+			           			<select name="pulldown">
+									<option value="attendance">有</option>
+									<option value="absence">無</option>
+								</select>
+							</div>
+							<br />
+							<div id="entryAllergy" style="display:block">
+								<label for="AllergyName">アレルギー情報(食物アレルギー表示対象品目のみ登録します。その他は担当者の判断)：</label>
+								<br>
+								特定原材料（８品目）
+								<label><input type="checkbox" name="option" value="Option1">卵</label>
+					        	<label><input type="checkbox" name="option" value="Option2">小麦</label>
+					        	<label><input type="checkbox" name="option" value="Option3">くるみ</label>
+						        <label><input type="checkbox" name="option" value="Option4">乳</label>
+						        <br />
+						        <label><input type="checkbox" name="option" value="Option5">蕎麦</label>
+						        <label><input type="checkbox" name="option" value="Option6">海老</label>
+						        <label><input type="checkbox" name="option" value="Option7">蟹</label>
+						        <label><input type="checkbox" name="option" value="Option8">落花生</label>
+						        <br />
+						        特定原材料に準ずるもの（20 品目）とその他アレルギー情報はこちら
+						        <div class="textareaOther">
+						        	<textarea name="other" cols="40" rows="10"></textarea>
+						        </div>
+						        対応等、注意事項の入力欄
+						        <div class="textareaPrecautions">
+						        	<textarea name="precaution" cols="40" rows="10"></textarea>
+						        	<br />
+						        	※任意
+						        </div>
+						        <br />
+							</div>
+							<div id="modalBtn"></div>
+						</div>
+					</div>
+				</div>
+				<!-- 削除モーダル -->
+				<div id="guestDeleteModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<label>
+								削除しますか？
+							</label>
+							<br>
+							<button type="button" onclick="sendDeleteForm(this)">キャンセル</button>
+						</div>
+					</div>
+				</div>
+				<!-- メール配信モーダル -->
+				<input type="hidden" id="checkedIdTemp">
+				<div id="mailDistributionModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							配信対象：
+							<input type="text" name="target" disabled>
+							<br />
+							※アンケート回答有無列の値が「無」の方のみ送信します。
+							<br />
+							<button type="button" data-next="MAIL_DISTRIBUTION" onclick="sendPostForm(this)">メール配信</button>
+						</div>
+					</div>
+				</div>
+			</form>
+			<!-- CSVアップロードフォーム -->
+			<form th:action="@{/csv/guest}" id="importCSV" enctype="multipart/form-data" method="post" style="display:none;">
+				<div id="csvImportModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							ボタンを押下しCSVファイルをアップロードしてください
+							<br />
+							<input type="file" name="csvfile" /> 
+							<br />
+							<button type="button" data-next="GUEST" onclick="sendPostCSVForm(this)">CSV読込</button>
+							<br />
+					    	<div id="csvDataRegister"></div>
+					    	<div id="csvDataErrorMessage"></div>
+						</div>
+					</div>
+				</div>
+			</form>
+			<form th:action="@{/home}" method="post">
+				<button>ホームへ戻る</button>
+			</form>
+	  		<br />
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('ユーザ画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/user.js}"></script>
+   </th:block>
+</head>
+<body th:with="selectedValue='user'">
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>ユーザ</h1>
+	        <form th:action="@{/csv}" id="exportCSV" method="get" style="display:block;">
+				<button type="button" data-next="USER" onclick="sendGetCSVForm(this)">CSV出力</button>
+			</form>
+	  		<form id="userForm" th:action="@{/api/user}" method="post">
+	  			更新・削除はチェックボックスを押下お願いします。
+	  			<br />
+	  			<input type="hidden" id="page" name="page" th:value="${pageNum !=null ? pageNum : 1}">
+				<input type="hidden" id="totalPages">
+				<button type="button" data-next="REGISTER_FORM" onclick="sendGetForm(this)">ユーザ登録</button>
+	  			<button type="button" data-next="UPDATE_FORM" onclick="sendGetForm(this)">ユーザ更新</button>
+	  			<button type="button" data-next="DELETE_FORM" onclick="sendGetForm(this)">ユーザ削除</button>
+	  			<button type="button" data-next="CSV_IMPORT_FORM" onclick="sendGetForm(this)">CSV読込</button>
+				<table border=1 class="user-table">
+					<tr>
+						<td />
+						<!-- ソート -->
+						<td>ユーザID<button type="button" data-sort="ASC,userId" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,userId" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<td>ユーザ名<button type="button" data-sort="ASC,userName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,userName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- ユーザ名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="userName">
+							<button type="button" onclick="sendGetForm(this)">検索</button>
+						<td>メールアドレス<button type="button" data-sort="ASC,mailAddress" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,mailAddress" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>権限<button type="button" data-sort="ASC,role" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,role" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- 権限フィルター -->
+						<!-- selectedValue値ないと初期値はuser設定 -->
+						<select name="pulldown" data-role="role" onchange="sendGetForm(this)">
+						 	 <option th:selected="${selectedValue == 'admin'}" value="admin" >管理者(admin)</option> 
+							 <option th:selected="${selectedValue == 'user'}" value="user" >ユーザ</option> 
+						 </select>
+					</tr>
+					<tbody id="userTableBody">
+						<tr th:each="user : ${userList }" th:object="${user}">
+							<td><input type="checkbox" name="selected"
+								th:value="*{userId }" onchange="onChecked(this)" />
+							<td th:text="*{userId }" />
+							<td th:text="*{userName }" />
+							<td th:text="*{mailAddress }" />
+							<td th:text="*{role }" />
+						</tr>
+					</tbody>
+				</table>
+				<!-- テーブルテンプレート -->
+				<template id="userTableTemplate">
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+					</tr>
+				</template>
+				<!-- ページネーションリンク -->
+				<div class="pagenation">
+					<span class="prev-page" >
+						<button type="button" th:data-page="${pageNum - 1 }"
+							th:if ="${pageNum > 1 }" onclick="sendGetForm(this)">前のページ</button>
+					</span>
+					<span class="current-page" >
+						<button type="button" th:data-page="${i}" th:each = "i : ${#numbers.sequence(1,totalPages)}"
+						th:text="${i}" onclick="sendGetForm(this)"></button>
+					</span>
+					<span class="next-page" >
+						<button type="button" th:data-page="${pageNum + 1 }"
+							th:if ="${pageNum < totalPages}" onclick="sendGetForm(this)">次のページ</button>
+					</span>
+				</div>
+				
+				<input type="hidden" id="checkedId">
+				<!-- 登録・更新モーダル -->
+				<div id="userRegisterUpdateModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<div>
+		        				姓・名の順です
+		        				<br>
+		            			<label for="userName">ユーザ名：</label>
+		            			<input type="text" name="userFirstName" size=6/> <input type="text" name="userLastName" size=6/>
+		            			<span class="font-red">※必須</span>
+		            			<br />
+		            			<span id="userNameValid" class="valid-error"></span>
+		       				</div>
+		        			<div>
+		            			<label for="mailAddress">メールアドレス：</label>
+		            			<input type="text" name="mailAddress" size=15/>
+		            			<span class="font-red">※必須</span>
+		            			<br />
+		            			<span id="mailAddressValid" class="valid-error"></span>
+		        			</div>
+		        			<div>
+		            			<label for="password">パスワード：</label>
+		            			<input type="text" name="password" size=15/>
+		            			<span class="font-red">※必須</span>
+		            			<br />
+		            			<span id="passwordValid" class="valid-error"></span>
+		            			<br />
+		            			※セキュリティの観点からパスワードは表示されません。
+		        			</div>
+							<br>
+							<div class="modalBtn"></div>
+						</div>
+					</div>
+				</div>
+				<!-- 削除モーダル -->
+				<div id="userDeleteModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<label>
+								削除しますか？
+							</label>
+							<br>
+							<button type="button" onclick="sendDeleteForm(this)">キャンセル</button>
+						</div>
+					</div>
+				</div>
+			</form>
+			<!-- CSVアップロードフォーム -->
+			<form th:action="@{/csv/user}" id="importCSV" enctype="multipart/form-data" method="post" style="display:none;">
+				<div id="csvImportModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							ボタンを押下しCSVファイルをアップロードしてください
+							<br />
+							※パスワードは初期値としてランダム文字列を設定します。登録後すぐに変更してください。
+							<br />
+							<input type="file" name="csvfile" /> 
+							<br />
+							<button type="button" data-next="USER" onclick="sendPostCSVForm(this)">CSV読込</button>
+							<br />
+					    	<div id="csvDataRegister"></div>
+					    	<div id="csvDataErrorMessage"></div>
+						</div>
+					</div>
+				</div>
+			</form>
+			<form th:action="@{/home}" method="post">
+				<button>ホームへ戻る</button>
+			</form>
+	  		<br />
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

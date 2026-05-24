@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('アレルギーアンケート回答フォーム', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/allergyquestionnaireform.js}"></script>
+   </th:block>
+</head>
+<body>
+	<div align="center">
+	  	<!--/* replaceタグを利用してレイアウト部品を呼び出す */-->
+	  	<!--/* th:replace="~{テンプレートファイルの名前(拡張子なし) :: パーツ名}" という記述で呼び出す */-->
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+			<h1>アレルギーアンケート回答フォーム</h1>
+			<form id="questionnaire" th:action="@{/questionnaire}" method="post" style="display:block;">
+				<input id="guestId" type="hidden" th:value="${guestId}" />
+				<label for="AllergyName">アレルギー情報：</label>
+				<br />
+				<label><input type="checkbox" name="option" value="Option1">卵</label>
+				<label><input type="checkbox" name="option" value="Option2">小麦</label>
+				<label><input type="checkbox" name="option" value="Option3">大豆</label>
+				<label><input type="checkbox" name="option" value="Option4">乳</label>
+				<br />
+				<label><input type="checkbox" name="option" value="Option5">蕎麦</label>
+				<label><input type="checkbox" name="option" value="Option6">海老</label>
+				<label><input type="checkbox" name="option" value="Option7">蟹</label>
+				<label><input type="checkbox" name="option" value="Option8">落花生</label>
+				<br />
+				その他アレルギー情報はこちら
+				<br />
+				<div class="textareaOther">
+					<textarea name="other" cols="40" rows="10"></textarea>
+				</div>
+				対応等、注意事項の入力欄
+				<br />
+				<div class="textareaPrecautions">
+					<textarea name="precaution" cols="40" rows="10"></textarea>
+				</div>
+				<button type="button" onclick="sendPostForm(this)">追加</button>
+		   	</form>
+		   	<form id="complete" style="display:none;">
+		   	アンケート回答完了しました。
+   			</form>
+	    </div>
+	  	
+	  	<!--/* フッターも同様の記述形式で呼び出す */-->
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

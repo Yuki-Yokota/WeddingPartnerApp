@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('ログイン画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+</head>
+<body>
+	<div align="center">
+	  	<!--/* replaceタグを利用してレイアウト部品を呼び出す */-->
+	  	<!--/* th:replace="~{テンプレートファイルの名前(拡張子なし) :: パーツ名}" という記述で呼び出す */-->
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>ログイン</h1>
+	  		<form th:action="@{/login}" method="post">
+				<div>
+					<label for="mailaddress">メールアドレス：</label>
+					<input type="email" name="mailAddress" />
+				</div>
+				<div>
+					パスワード：<input type="password" name="password" />
+				</div>
+				<button type="submit">送信</button>
+			</form>
+	  		<!-- <h1 th:text="${message}"></h1> -->
+	  		<br />
+	    </div>
+	  	
+	  	<!--/* フッターも同様の記述形式で呼び出す */-->
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

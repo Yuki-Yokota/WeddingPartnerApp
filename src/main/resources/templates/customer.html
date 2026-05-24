@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('顧客画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/customer.js}"></script>
+   </th:block>
+</head>
+<body >
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>顧客</h1>
+	        <input type="hidden" id="customerId">
+	        <input type="hidden" id="sessionUser" th:value="${SessionUser}">
+	        <form th:action="@{/csv}" id="exportCSV" method="get" style="display:block;">
+				<button type="button" data-next="CUSTOMER" onclick="sendGetCSVForm(this)">CSV出力</button>
+			</form>
+			<form th:action="@{/home}" id="transition" method="post" style="display:block;">
+				<input type="hidden" name="selectCustomerId">
+				<button type="submit" name="action" th:value="CONTRACT" >契約画面へ遷移</button>
+			</form>
+	  		<form th:action="@{/api/customer}" id="customerForm" method="post" style="display:block;">
+	  			更新・削除はチェックボックスを押下お願いします。
+	  			<br />
+	  			<input type="hidden" id="page" name="page" th:value="${pageNum !=null ? pageNum : 1}">
+				<input type="hidden" id="totalPages">
+				<button type="button" data-next="REGISTER_FORM" onclick="sendGetForm(this)">顧客登録</button>
+	  			<button type="button" data-next="UPDATE_FORM" onclick="sendGetForm(this)">顧客更新</button>
+	  			<button type="button" data-next="DELETE_FORM" onclick="sendGetForm(this)">顧客削除</button>
+	  			<button type="button" data-next="CSV_IMPORT_FORM" onclick="sendGetForm(this)">CSV読込</button>
+				<table border=1 class="customer-table">
+					<tr>
+						<td />
+						<!-- ソート -->
+						<td>顧客ID<button type="button" data-sort="ASC,customerId" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,customerId" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<td>新郎名<button type="button" data-sort="ASC,groomName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,groomName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- 新郎名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="groomName">
+							<button type="button" onclick="sendGetForm(this)">検索</button>
+						<td>新婦名<button type="button" data-sort="ASC,brideName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,brideName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- 新婦名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="brideName">
+							<button type="button" onclick="sendGetForm(this)">検索</button>
+						<td>メールアドレス<button type="button" data-sort="ASC,mailAddress" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,mailAddress" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>電話番号<button type="button" data-sort="ASC,phoneNumber" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,phoneNumber" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>Todoリスト</td>
+					</tr>
+					<tbody id="customerTableBody">
+						<tr th:each="customer : ${customerList }" th:object="${customer}">
+							<td><input type="checkbox" name="selected"
+								th:value="*{customerId }" onchange="onCheckedCus(this)" />
+							<td th:text="*{customerId }" />
+							<td th:text="*{groomName }" />
+							<td th:text="*{brideName }" />
+							<td th:text="*{mailAddress }" />
+							<td th:text="*{phoneNumber }" />
+							<td><button type="button" class="transit" th:data-customerid="*{customerId }"
+									onclick="sendGetForm(this)">詳細</button></td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- テーブルテンプレート -->
+				<template id="customerTableTemplate">
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+					</tr>
+				</template>
+				<!-- ページネーションリンク -->
+				<div class="pagenation">
+					<span class="prev-page" >
+						<button type="button" th:data-page="${pageNum - 1 }"
+							th:if ="${pageNum > 1 }" onclick="sendGetForm(this)">前のページ</button>
+					</span>
+					<span class="current-page" >
+						<button type="button" th:data-page="${i}" th:each = "i : ${#numbers.sequence(1,totalPages)}"
+						th:text="${i}" onclick="sendGetForm(this)"></button>
+					</span>
+					<span class="next-page" >
+						<button type="button" th:data-page="${pageNum + 1 }"
+							th:if ="${pageNum < totalPages}" onclick="sendGetForm(this)">次のページ</button>
+					</span>
+				</div>
+				
+				<input type="hidden" id="checkedId">
+				<!-- 登録・更新モーダル -->
+				<div id="customerRegisterUpdateModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<div>
+				       			姓・名の順です
+				       			<br />
+				           		<label for="groomName">新郎名：</label>
+				           		<input type="text" name="groomFirstName" size=6/> <input type="text" name="groomLastName" size=6/>
+				           		<span class="font-red">※必須</span>
+				           		<br />
+				           		<span id="groomNameValid" class="valid-error"></span>
+				           		<br />
+				           		<label for="brideName">新婦名：</label>
+				           		<input type="text" name="brideFirstName" size=6/> <input type="text" name="brideLastName" size=6/>
+				           		<span class="font-red">※必須</span>
+				           		<br />
+				           		<span id="brideNameValid" class="valid-error"></span>
+				      		</div>
+		        			<div>
+		            			<label for="mailAddress">メールアドレス：</label>
+		            			<input type="text" name="mailAddress" size=15/>
+		            			<span class="font-red">※必須</span>
+		            			<br />
+		            			<span id="mailAddressValid" class="valid-error"></span>
+		        			</div>
+		        			<div>
+			           			<label for="phoneNumber">電話番号：</label>
+			           			<input type="text" name="phoneNumber" size=3/>-
+			           			<input type="text" name="phoneNumber" size=3/>-
+			           			<input type="text" name="phoneNumber" size=3/>
+			           			<span class="font-red">※必須</span>
+			           			<br />
+			           			<span id="phoneNumberValid" class="valid-error"></span>
+			       			</div>
+							<br>
+							<div class="modalBtn"></div>
+						</div>
+					</div>
+				</div>
+				<!-- 削除モーダル -->
+				<div id="customerDeleteModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<label>
+								削除しますか？
+							</label>
+							<br>
+							<button type="button" onclick="sendDeleteForm(this)">キャンセル</button>
+						</div>
+					</div>
+				</div>
+			</form>
+			<!-- CSVアップロードフォーム -->
+			<form th:action="@{/csv/customer}" id="importCSV" enctype="multipart/form-data" method="post" style="display:none;">
+				<div id="csvImportModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							ボタンを押下しCSVファイルをアップロードしてください
+							<br />
+							※パスワードは初期値としてランダム文字列を設定します。登録後すぐに変更してください。
+							<br />
+							<input type="file" name="csvfile" /> 
+							<br />
+							<button type="button" data-next="CUSTOMER" onclick="sendPostCSVForm(this)">CSV読込</button>
+							<br />
+					    	<div id="csvDataRegister"></div>
+					    	<div id="csvDataErrorMessage"></div>
+						</div>
+					</div>
+				</div>
+			</form>
+			<!-- ToDoフォーム -->
+			<form th:action="@{/api/customer}" id="todoForm" method="post" style="display:none;">
+			   	<h3>Todoリスト</h3>
+			   	<input type="hidden" name="deleteFlag">
+			   	<button type="button" data-addeditflg="add" onclick="todoModalOperation(this)">追加</button>
+				<br />
+			   	<div id="todoList">
+					<table border=1>
+						<tr>
+							<td></td>
+							<td>TodoId</td>
+							<td>タスク</td>
+							<td>期限</td>
+							<td>更新</td>
+						</tr>
+						<tbody id="todoTableBody"></tbody>
+						<!-- テーブルテンプレート -->
+						<template id="todoTableTemplate">
+							<tr>
+								<td />
+								<td />
+								<td />
+								<td />
+								<td />
+							</tr>
+						</template>
+					</table>
+					<!-- ページネーションリンク -->
+					<div class="pagenation">
+						<span class="prev-page" ></span>
+						<span class="current-page" ></span>
+						<span class="next-page" ></span>
+					</div>
+				</div>
+			   	<div id="todoRegisterUpdateModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<div id="todoIdEntry">
+								TodoId:<input type="text" name="todoId" size=3 disabled>
+							</div>
+							タスク内容：<input type="text" name="taskContent" size=17>
+							<span class="font-red">※必須</span>
+							<br />
+				           	<span id="taskContentValid" class="valid-error"></span>
+							<br />
+							締め切り： <input type="date" name="deadline">
+							<span class="font-red">※必須</span>
+							<br />
+				           	<span id="deadlineValid" class="valid-error"></span>
+							<br />
+							<div id="todoModalBtn"></div>
+						</div>
+					</div>
+				</div>
+				<br>
+			    <button type="button" onclick="sendGetForm(this)">顧客一覧へ戻る</button>
+			</form>
+			<form th:action="@{/home}" method="post">
+				<button>ホームへ戻る</button>
+			</form>
+	  		<br />
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

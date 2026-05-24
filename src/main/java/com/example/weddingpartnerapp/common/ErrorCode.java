@@ -1,0 +1,16 @@
+package com.example.weddingpartnerapp.common;
+public enum ErrorCode {
+	CHOOSE_ONLY_ONE,
+	INVALID_INPUT,
+	NOT_SENDMAIL,
+	SURVEY_COMPLETED,
+	NOT_CONVERT_TO_PDF,
+	NOT_SAVE_OPEN_TO_PDF,
+	SYSTEM_ERROR,
+	FILE_NOT_FOUND,
+	FILE_NOT_READ,
+	FILE_NOT_WRITE,
+	LIST_IS_EMPTY,
+    INVALID_DATA;
+}
+

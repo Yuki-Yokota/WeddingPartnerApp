@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.CustomerMapper">
+	<resultMap id="customerResultMap" type="Customer">
+		<id property = "customerId" column="CUSTOMER_ID"/>
+		<result property = "userId" column="USER_ID"/>
+		<result property = "groomName" column="GROOM_NAME"/>
+		<result property = "brideName" column="BRIDE_NAME"/>
+		<result property = "mailAddress" column="MAIL_ADDRESS"/>
+		<result property = "phoneNumber" column="PHONE_NUMBER"/>
+	</resultMap>
+	
+	<select id="findAllCustomer" resultMap="customerResultMap">
+		select * from customers
+	</select>
+	<select id="findByUserId" resultMap="customerResultMap">
+		select * from customers WHERE USER_ID = #{userId}
+	</select>
+	<select id="findByCustomerId" resultMap="customerResultMap">
+		select * from customers WHERE CUSTOMER_ID = #{customerId}
+	</select>
+	<select id="count" resultType="int">
+       SELECT MAX(CUSTOMER_ID) FROM customers
+   </select>
+	<insert id="insert" parameterType="Customer">
+       INSERT INTO customers
+       (
+       	CUSTOMER_ID,
+           USER_ID,
+           GROOM_NAME,
+           BRIDE_NAME,
+           MAIL_ADDRESS,
+           PHONE_NUMBER
+       )
+       VALUES
+       (
+       	#{customerId},
+           #{userId},
+           #{groomName},
+           #{brideName},
+           #{mailAddress},
+           #{phoneNumber}
+       )
+   </insert>
+   <update id="update" parameterType="Customer">
+       UPDATE customers
+       SET
+           groom_name = #{groomName},
+           bride_name = #{brideName},
+           mail_address = #{mailAddress},
+           phone_number = #{phoneNumber}
+       WHERE
+           customer_id = #{customerId}
+   </update>
+   <delete id="delete" parameterType="Customer">
+       DELETE FROM
+           customers
+       WHERE
+           customer_id = #{customerId}
+   </delete>
+</mapper>

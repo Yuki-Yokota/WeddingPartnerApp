@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.WeddingMapper">
+	<resultMap id="weddingResultMap" type="Wedding">
+		<id property = "weddingId" column="WEDDING_ID"/>
+		<result property = "customerId" column="CUSTOMER_ID"/>
+		<result property = "venueId" column="VENUE_ID"/>
+		<result property = "weddingDate" column="WEDDING_DATE"/>
+		<result property = "completedFlag" column="COMPLETED_FLAG"/>
+	</resultMap>
+	
+	<select id="findAllWedding" resultMap="weddingResultMap">
+		select * from weddings
+	</select>
+	<select id="findByCustomerId" resultMap="weddingResultMap">
+		select * from weddings WHERE customer_id = #{customerId}
+	</select>
+	<select id="findByWeddingId" resultMap="weddingResultMap">
+		select * from weddings WHERE wedding_id = #{weddingId}
+	</select>
+	<select id="count" resultType="int">
+       SELECT MAX(wedding_ID) FROM weddings
+   </select>
+	<insert id="insert" parameterType="Wedding">
+       INSERT INTO weddings
+       (
+           wedding_id,
+           customer_id,
+           venue_id,
+           wedding_date,
+           completed_flag
+       )
+       VALUES
+       (
+           #{weddingId},
+           #{customerId},
+           #{venueId},
+           #{weddingDate},
+           #{completedFlag}
+       )
+   </insert>
+   <update id="update" parameterType="Wedding">
+       UPDATE weddings
+       SET
+           venue_id = #{venueId},
+           wedding_date = #{weddingDate}
+       WHERE
+           wedding_id = #{weddingId}
+   </update>
+   <delete id="delete" parameterType="Wedding">
+       DELETE FROM
+           weddings
+       WHERE
+           wedding_id = #{weddingId}
+   </delete>
+</mapper>

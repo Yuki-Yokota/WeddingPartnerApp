@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.TodoMapper">
+	<resultMap id="todoResultMap" type="Todo">
+		<id property = "todoId" column="TODO_ID"/>
+		<result property = "customerId" column="CUSTOMER_ID"/>
+		<result property = "status" column="STATUS"/>
+		<result property = "taskContent" column="TASK_CONTENT"/>
+		<result property = "deadline" column="DEADLINE"/>
+		<result property = "deleteFlag" column="DELETE_FLAG"/>
+	</resultMap>
+	
+	<select id="findAllTodo" resultMap="todoResultMap">
+		select * from todos WHERE delete_flag = FALSE
+	</select>
+	<select id="findByCustomerId" resultMap="todoResultMap">
+		select * from todos WHERE customer_id = #{customerId} AND delete_flag = FALSE
+	</select>
+	<select id="findByTodoId" resultMap="todoResultMap">
+		select * from todos WHERE todo_id = #{todoId} AND delete_flag = FALSE
+	</select>
+	<select id="existCustomerById" resultMap="todoResultMap">
+		SELECT EXISTS(SELECT * FROM customers WHERE customer_id = #{customerId})
+	</select>
+	<select id="count" resultType="int">
+       SELECT MAX(todo_ID) FROM todos
+   </select>
+	<insert id="insert" parameterType="Todo">
+       INSERT INTO todos
+       (
+           todo_id,
+           customer_id,
+           status,
+           task_content,
+           deadline,
+           delete_flag
+       )
+       VALUES
+       (
+           #{todoId},
+           #{customerId},
+           #{status},
+           #{taskContent},
+           #{deadline},
+           #{deleteFlag}
+       )
+   </insert>
+   <update id="update" parameterType="Todo">
+       UPDATE todos
+       SET
+           status = #{status},
+           task_content = #{taskContent},
+           deadline = #{deadline},
+           delete_flag = #{deleteFlag}
+       WHERE
+           todo_id = #{todoId}
+   </update>
+   <update id="delete" parameterType="Todo">
+       UPDATE todos
+       SET
+           delete_flag = TRUE
+       WHERE
+           todo_id = #{todoId}
+   </update>
+</mapper>

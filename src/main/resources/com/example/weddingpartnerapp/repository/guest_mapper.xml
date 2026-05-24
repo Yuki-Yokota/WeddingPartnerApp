@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.GuestMapper">
+	<resultMap id="guestResultMap" type="Guest">
+		<id property = "guestId" column="GUEST_ID"/>
+		<result property = "weddingId" column="WEDDING_ID"/>
+		<result property = "guestName" column="GUEST_NAME"/>
+		<result property = "mailAddress" column="MAIL_ADDRESS"/>
+		<result property = "precaution" column="PRECAUTION"/>
+		<result property = "attendance" column="ATTENDANCE"/>
+		<result property = "ansFlg" column="ANS_FLAG"/>
+		<result property = "deleteFlg" column="DELETE_FLAG"/>
+       <collection property="allergyInfo" ofType="Allergy" javaType="ArrayList">
+       	<id property="allergyId" column="ALLERGY_ID" />
+       	<result property="allergyName" column="ALLERGY_NAME" />
+   	</collection>
+	</resultMap>
+	
+	<select id="findByWeddingId" resultMap="guestResultMap">
+		SELECT G.GUEST_ID,
+		    G.WEDDING_ID,
+		    G.GUEST_NAME,
+		    G.MAIL_ADDRESS,
+		    G.PRECAUTION,
+		    G.ATTENDANCE,
+		    G.ANS_FLAG,
+		    G.DELETE_FLAG,
+		    A.allergy_id As ALLERGY_ID,
+		    A.allergy_name As ALLERGY_NAME
+		    FROM guests G
+				LEFT OUTER JOIN guests_allergies GA ON G.guest_id = GA.guest_id
+				LEFT OUTER JOIN allergies A ON GA.allergy_id = A.allergy_id
+			WHERE wedding_id = #{weddingId} And delete_flag = false
+	</select>
+	<select id="findByGuestId" resultMap="guestResultMap">
+		SELECT G.GUEST_ID,
+		    G.WEDDING_ID,
+		    G.GUEST_NAME,
+		    G.MAIL_ADDRESS,
+		    G.PRECAUTION,
+		    G.ATTENDANCE,
+		    G.ANS_FLAG,
+		    G.DELETE_FLAG,
+		    A.allergy_id As ALLERGY_ID,
+		    A.allergy_name As ALLERGY_NAME
+		    FROM guests G
+				LEFT OUTER JOIN guests_allergies GA ON G.guest_id = GA.guest_id
+				LEFT OUTER JOIN allergies A ON GA.allergy_id = A.allergy_id
+			WHERE G.guest_id = #{guestId} And delete_flag = false
+	</select>
+	<select id="count" resultType="int">
+       SELECT MAX(GUEST_ID) FROM guests
+   </select>
+   <insert id="insert" parameterType="Guest">
+       INSERT INTO guests
+       (
+       	GUEST_ID,
+           WEDDING_ID,
+           GUEST_NAME,
+           MAIL_ADDRESS,
+           PRECAUTION,
+           ATTENDANCE,
+           ANS_FLAG,
+           DELETE_FLAG
+       )
+       VALUES
+       (
+       	#{guestId},
+           #{weddingId},
+           #{guestName},
+           #{mailAddress},
+           #{precaution},
+           #{attendance},
+           #{ansFlg},
+           #{deleteFlg}
+       )
+   </insert>
+   <update id="update" parameterType="Guest">
+       UPDATE guests
+       SET
+           guest_name = #{guestName},
+           mail_address = #{mailAddress},
+           precaution = #{precaution},
+           attendance = #{attendance},
+           ans_flag = #{ansFlg}
+       WHERE
+           guest_id = #{guestId}
+   </update>
+   <update id="delete" parameterType="Guest">
+       UPDATE guests
+       SET
+           delete_flag = TRUE
+       WHERE
+           guest_id = #{guestId}
+   </update>
+</mapper>

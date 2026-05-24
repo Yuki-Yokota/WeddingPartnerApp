@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: common_head('式管理画面', ~{::links}, ~{::scripts})}">
+ 	<meta charset="UTF-8">
+ 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<title>index.htmlです</title>
+ 	<!--/* ページ個別js */-->
+   <th:block th:fragment="scripts">
+       <script th:src="@{js/wedding.js}"></script>
+   </th:block>
+</head>
+<body>
+	<div align="center">
+	  	<header th:replace="~{layout :: common_header}"></header>
+	
+		<div th:fragment="content">
+	        <h1>式管理</h1>
+	        <form th:action="@{/csv}" id="exportCSV" method="get" style="display:block;">
+				<button type="button" data-next="WEDDING" onclick="sendGetCSVForm(this)">CSV出力</button>
+			</form>
+			<form th:action="@{/home}" method="post" style="display:block;">
+				ゲスト画面へ遷移する際はチェックボックスを押下お願いします。
+				<br />
+				<input type="hidden" name="selectWeddingId">
+				<button type="submit" name="action" th:value="GUEST">ゲスト管理画面へ遷移</button>
+			</form>
+	  		<form th:action="@{/api/wedding}" method="post">
+	  			更新・削除はチェックボックスを押下お願いします。
+	  			<br />
+	  			<input type="hidden" id="page" name="page" th:value="${pageNum !=null ? pageNum : 1}">
+				<input type="hidden" id="totalPages">
+	  			<button type="button" data-next="UPDATE_FORM" onclick="sendGetForm(this)">式更新</button>
+	  			<button type="button" data-next="DELETE_FORM" onclick="sendGetForm(this)">式削除</button>
+				<table border=1 class="wedding-table">
+					<tr>
+						<td />
+						<!-- ソート -->
+						<td>式ID<button type="button" data-sort="ASC,weddingId" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,weddingId" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<td>新郎名<button type="button" data-sort="ASC,groomName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,groomName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- 新郎名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="groomName">
+							<button type="button" id="groom" onclick="sendGetForm(this)">検索</button>
+						<td>新婦名<button type="button" data-sort="ASC,brideName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,brideName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- 新婦名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="brideName">
+							<button type="button" id="bride" onclick="sendGetForm(this)">検索</button>
+						<td>プランナー名<button type="button" data-sort="ASC,plannerName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,plannerName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button>
+						<!-- プランナー名検索ボックス -->
+							検索：<input	type="text" name="searchValue" data-role="plannerName">
+							<button type="button" id="planner" onclick="sendGetForm(this)">検索</button>
+						<td>式日付<button type="button" data-sort="ASC,weddingDate" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,weddingDate" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+						<td>会場名<button type="button" data-sort="ASC,venueName" class="a triangle-button-asc" onclick="sendGetForm(this)"></button>
+							<button type="button" data-sort="DESC,venueName" class="a triangle-button-desc" onclick="sendGetForm(this)"></button></td>
+					</tr>
+					<tbody id="weddingTableBody">
+						<tr th:each="wedding : ${weddingList }" th:object="${wedding}">
+							<td><input type="checkbox" name="selected"
+								th:value="*{weddingId }" onchange="onCheckedWed(this)" />
+							<td th:text="*{weddingId }" />
+							<td th:text="*{groomName }" />
+							<td th:text="*{brideName }" />
+							<td th:text="*{plannerName }" />
+							<td th:text="*{weddingDate }" />
+							<td th:text="*{venueName }" />
+						</tr>
+					</tbody>
+				</table>
+				<!-- テーブルテンプレート -->
+				<template id="weddingTableTemplate">
+					<tr>
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+						<td />
+					</tr>
+				</template>
+				<!-- ページネーションリンク -->
+				<div class="pagenation">
+					<span class="prev-page" >
+						<button type="button" th:data-page="${pageNum - 1 }"
+							th:if ="${pageNum > 1 }" onclick="sendGetForm(this)">前のページ</button>
+					</span>
+					<span class="current-page" >
+						<button type="button" th:data-page="${i}" th:each = "i : ${#numbers.sequence(1,totalPages)}"
+						th:text="${i}" onclick="sendGetForm(this)"></button>
+					</span>
+					<span class="next-page" >
+						<button type="button" th:data-page="${pageNum + 1 }"
+							th:if ="${pageNum < totalPages}" onclick="sendGetForm(this)">次のページ</button>
+					</span>
+				</div>
+				
+				<input type="hidden" id="checkedId">
+				<!-- 更新モーダル -->
+				<div id="wedUpdateModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							式日付:<input type="date" name="weddingDate" />
+							<span class="font-red">※必須</span>
+							<br />
+		            		<span id="weddingDateValid" class="valid-error"></span>
+		            		<br />
+							会場名：
+							<select id="selectbox"></select>
+							<br />
+							<button type="button" onclick="sendPutForm(this)">更新</button>
+						</div>
+					</div>
+				</div>
+				<!-- 削除モーダル -->
+				<div id="wedDeleteModal" class="modal">
+					<div class="modal-content">
+						<span class="close">✖︎</span>
+						<div id="content">
+							<label>
+								削除しますか？
+							</label>
+							<br>
+							<button type="button" onclick="sendDeleteForm(this)">キャンセル</button>
+						</div>
+					</div>
+				</div>
+			</form>
+			<form th:action="@{/home}" method="post">
+				<button>ホームへ戻る</button>
+			</form>
+	  		<br />
+	    </div>
+	  	<footer th:replace="~{layout :: common_footer}"></footer>
+	</div>
+</body>
+</html>

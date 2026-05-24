@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.ContractMapper">
+	<resultMap id="contractResultMap" type="Contract">
+		<id property = "contractId" column="contract_ID"/>
+		<result property = "customerId" column="CUSTOMER_ID"/>
+		<result property = "numOfPerson" column="NUMOFPERSON"/>
+		<result property = "venueName" column="VENUE_NAME"/>
+		<result property = "weddingType" column="WEDDING_TYPE"/>
+		<result property = "weddingDate" column="WEDDING_DATE"/>
+		<result property = "dish" column="DISH"/>
+		<result property = "drink" column="DRINK"/>
+		<result property = "groomDress" column="GROOM_DRESS"/>
+		<result property = "brideDress" column="BRIDE_DRESS"/>
+		<result property = "photoShootFlg" column="PHOTOSHOOT_FLG"/>
+		<result property = "videoShootFlg" column="VIDEOSHOOT_FLG"/>
+		<result property = "flowerArrangementFlg" column="FLOWER_ARRANGEMENT_FLG"/>
+		<result property = "giftFlg" column="GIFT_FLG"/>
+		<result property = "acousticFlg" column="ACOUSTIC_FLG"/>
+		<result property = "hairMakeUpFlg" column="HAIR_MAKEUP_FLG"/>
+		<result property = "moderatorFlg" column="MODERATOR_FLG"/>
+		<result property = "otherText" column="OTHER_TEXT"/>
+		<result property = "totalAmount" column="TOTAL_AMOUNT"/>
+		<result property = "completedFlg" column="COMPLETED_FLG"/>
+	</resultMap>
+	<resultMap id="dishResultMap" type="Dish">
+		<id property = "dishId" column="DISH_ID"/>
+		<result property = "dishAmount" column="DISH_AMOUNT"/>
+	</resultMap>
+	<resultMap id="drinkResultMap" type="Drink">
+		<id property = "drinkId" column="DRINK_ID"/>
+		<result property = "drinkAmount" column="DRINK_AMOUNT"/>
+	</resultMap>
+	<resultMap id="groomDressResultMap" type="GroomDress">
+		<id property = "groomDressId" column="GROOMDRESS_ID"/>
+		<result property = "groomDressAmount" column="GROOMDRESS_AMOUNT"/>
+	</resultMap>
+	<resultMap id="brideDressResultMap" type="BrideDress">
+		<id property = "brideDressId" column="BRIDEDRESS_ID"/>
+		<result property = "brideDressAmount" column="BRIDEDRESS_AMOUNT"/>
+	</resultMap>
+	<resultMap id="weddingTypeResultMap" type="WeddingType">
+		<id property = "weddingTypeId" column="WEDDING_TYPE_ID"/>
+		<result property = "weddingTypeName" column="WEDDING_TYPE_NAME"/>
+		<result property = "weddingTypeAmount" column="WEDDING_TYPE_AMOUNT"/>
+	</resultMap>
+	<resultMap id="optionAmountResultMap" type="OptionAmount">
+		<id property = "optionAmountId" column="OPTION_AMOUNT_ID"/>
+		<result property = "photoShootAmount" column="PHOTOSHOOT_AMOUNT"/>
+		<result property = "videoShootAmount" column="VIDEOSHOOT_AMOUNT"/>
+		<result property = "flowerArrangementAmount" column="FLOWER_ARRANGEMENT_AMOUNT"/>
+		<result property = "giftAmount" column="GIFT_AMOUNT"/>
+		<result property = "acousticAmount" column="ACOUSTIC_AMOUNT"/>
+		<result property = "hairMakeUpAmount" column="HAIR_MAKEUP_AMOUNT"/>
+		<result property = "moderatorAmount" column="MODERATOR_AMOUNT"/>
+		<result property = "cakeAmount" column="CAKE_AMOUNT"/>
+	</resultMap>
+	
+	<select id="findAllDish" resultMap="dishResultMap">
+		select * from dishes
+	</select>
+	<select id="findAllDrink" resultMap="drinkResultMap">
+		select * from drinks
+	</select>
+	<select id="findAllGroomDress" resultMap="groomDressResultMap">
+		select * from groom_dresses
+	</select>
+	<select id="findAllBrideDress" resultMap="brideDressResultMap">
+		select * from bride_dresses
+	</select>
+	<select id="findWeddingTypeByName" resultMap="weddingTypeResultMap">
+		SELECT * FROM wedding_types WHERE wedding_type_name = #{weddingTypeName}
+	</select>
+	<select id="findOptionAmountById" resultMap="optionAmountResultMap">
+		SELECT * FROM option_amount WHERE option_amount_id = #{optionAmountId}
+	</select>
+	<select id="findContractById" resultMap="contractResultMap">
+		SELECT * FROM contracts WHERE contract_id = #{contractId} AND completed_flg = FALSE
+	</select>
+	<select id="count" resultType="int">
+       SELECT MAX(CONTRACT_ID) FROM contracts
+   </select>
+	<insert id="insert" parameterType="Contract">
+       INSERT INTO contracts
+       (
+           contract_id,
+           customer_id,
+           numofperson,
+           venue_name,
+           wedding_type,
+           wedding_date,
+           dish,
+           drink,
+           groom_dress,
+           bride_dress,
+           photoshoot_flg,
+           videoshoot_flg,
+           flower_arrangement_flg,
+           gift_flg,
+           acoustic_flg,
+           hair_makeup_flg,
+           moderator_flg,
+           other_text,
+           total_amount,
+           completed_flg
+       )
+       VALUES
+       (
+           #{contractId},
+           #{customerId},
+           #{numOfPerson},
+           #{venueName},
+           #{weddingType},
+           #{weddingDate},
+           #{dish},
+           #{drink},
+           #{groomDress},
+           #{brideDress},
+           #{photoShootFlg},
+           #{videoShootFlg},
+           #{flowerArrangementFlg},
+           #{giftFlg},
+           #{acousticFlg},
+           #{hairMakeUpFlg},
+           #{moderatorFlg},
+           #{otherText},
+           #{totalAmount},
+           #{completedFlg}
+       )
+   </insert>
+   <update id="update" parameterType="Contract">
+       UPDATE contracts
+       SET
+           completed_flg = TRUE
+       WHERE
+           contract_id = #{contractId}
+   </update>
+</mapper>
+

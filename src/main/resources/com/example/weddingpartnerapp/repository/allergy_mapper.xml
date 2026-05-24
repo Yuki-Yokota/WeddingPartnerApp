@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.weddingpartnerapp.repository.AllergyMapper">
+	<resultMap id="allergyResultMap" type="Allergy">
+		<id property = "allergyId" column="ALLERGY_ID"/>
+		<result property = "allergyName" column="ALLERGY_NAME"/>
+	</resultMap>
+	
+	<select id="findAllAllergy" resultMap="allergyResultMap">
+		select * from allergies
+	</select>
+	<select id="findGuestAllergyById" resultMap="allergyResultMap">
+		SELECT allergy_id FROM guests_allergies
+	</select>
+	
+	<insert id="insertGuestAllergy">
+       INSERT INTO guests_allergies
+       (
+       	guest_id,
+           allergy_id
+       )
+       VALUES
+       (
+       	#{guestId},
+           #{allergyId}
+       )
+   </insert>
+   <delete id="deleteGuestAllergyByGuestId" parameterType="Guest">
+       DELETE FROM
+           guests_allergies
+       WHERE
+           guest_id = #{guestId}
+   </delete>
+</mapper>

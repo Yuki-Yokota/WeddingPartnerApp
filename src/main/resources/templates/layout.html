@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="jp" xmlns:th="http://www.thymeleaf.org">
+<!--/* 共通で利用するヘッド部分を定義する */-->
+<!--/* th:fragment="ヘッドの名前" という形式で記述する */-->
+<head th:fragment="common_head(title, links, scripts)">
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!--/* 1.タイトル部分 */-->
+   <title th:text="${title}+' | Tset App'">各ページタイトル | Tset App</title>
+  
+   <!--/* 2.css部分 */-->
+   <link rel="stylesheet" th:href="@{css/style.css}">
+   <!--/* 3.js部分  */-->
+   <script th:src="@{js/common.js}"></script>
+   <!-- 各画面において別途読み込むファイルを管理するための記述 -->
+   <!-- 読み込むファイルが存在しない場合はblockの記述自体が存在しない形式になる -->
+   <th:block th:replace="${links} ?: _" />
+   <th:block th:replace="${scripts} ?: _" />
+   <script th:inline="javascript">
+	    /*<![CDATA[*/
+	    const contextPath = /*[[@{/}]]*/ '/';
+	    /*]]>*/
+	</script>
+</head>
+<div align="center">
+	<!--/* 共通で利用するヘッダーを定義する */-->
+	<!--/* th:fragment="ヘッダーの名前" という形式で記述する */-->
+	<header th:fragment="common_header">
+	    <div style="background-color: gray;">
+	        <p>共通ヘッダー</p>
+	    </div>
+	    <div id="error">
+	    	<h2 th:text="${error}"></h2>
+	    </div>
+	</header>
+	
+	<main th:insert="~{ :: content}"></main>
+	
+	<!--/* 共通で利用するフッターを定義する */-->
+	<!--/* th:fragment="フッターの名前" という形式で記述する */-->
+	<footer th:fragment="common_footer">
+	    <div>
+	        <p>© 2026 Common Footer</p>
+	    </div>
+	</footer>
+</div>
