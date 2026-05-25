@@ -18,8 +18,9 @@
    <th:block th:replace="${scripts} ?: _" />
    <script th:inline="javascript">
 	    /*<![CDATA[*/
-	    const contextPath = /*[[@{/}]]*/ '/';
+	    let contextPath = /*[[@{/}]]*/ '';
 	    /*]]>*/
+	    contextPath = contextPath.endsWith('/') ? contextPath : contextPath + '/';
 	</script>
 </head>
 <div align="center">

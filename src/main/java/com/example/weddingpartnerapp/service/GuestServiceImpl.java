@@ -63,9 +63,6 @@ public class GuestServiceImpl implements GuestService {
 	@Autowired
 	private WeddingFunction wedFunc;
 	
-	@Value("${server.servlet.context-path}")
-	private String contextPath;
-	
 	@Value("${local.mail.url}")
 	private String localUrl;
 
@@ -397,7 +394,7 @@ public class GuestServiceImpl implements GuestService {
 		WeddingDTO wedDto = wedFunc.apply(wed);
 		String venuePhoneNumber=venMapper.findById(wed.getVenueId()).getPhoneNumber();
 		String userName = userMapper.findById(user.getUserId()).getUserName();
-		String destinationUrl=localUrl+contextPath+"/questionnaire";
+		String destinationUrl=localUrl+"/questionnaire";
 		if(guestId != null) {
 			destinationUrl=destinationUrl+"?id="+guestId;
 		}
