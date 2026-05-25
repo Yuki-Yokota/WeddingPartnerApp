@@ -38,7 +38,7 @@ public class ExceptionController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
     
-    /*
+   
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneralException(Exception e) {
     	List<ErrorCombi>error = new ArrayList<>();
@@ -46,5 +46,5 @@ public class ExceptionController {
         //log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
-	*/
+	
 }
