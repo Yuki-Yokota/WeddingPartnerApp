@@ -24,6 +24,9 @@
 	<select id="count" resultType="int">
        SELECT MAX(USER_ID) FROM users
    </select>
+   <select id="countByMailAddress" resultType="int">
+       SELECT MAX(USER_ID) FROM users WHERE mail_address = #{mailAddress}
+   </select>
 	<insert id="insert" parameterType="User">
        INSERT INTO users
        (

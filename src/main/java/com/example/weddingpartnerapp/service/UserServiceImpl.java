@@ -27,22 +27,21 @@ import com.example.weddingpartnerapp.model.Paginated;
 import com.example.weddingpartnerapp.model.User;
 import com.example.weddingpartnerapp.repository.UserMapper;
 
-
 @Service
 public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserMapper userMapper;
-	
+
 	@Override
 	public User authenticate(User entryUser) {
-		Optional<User>userOpt = userMapper.findUserByMailAddress(entryUser.getMailAddress());
+		Optional<User> userOpt = userMapper.findUserByMailAddress(entryUser.getMailAddress());
 		User loginUser = new User();
-		String hashPassword=null;
-		boolean loginFlg=false;
-		if(userOpt.isPresent()) {
+		String hashPassword = null;
+		boolean loginFlg = false;
+		if (userOpt.isPresent()) {
 			loginUser = userOpt.get();
-			if(loginUser.getSalt()==null) {
+			if (loginUser.getSalt() == null) {
 				byte[] salt = PBKDF2Util.generateSalt();
 				try {
 					hashPassword = PBKDF2Util.hashPassword(loginUser.getPassword(), salt);
@@ -54,19 +53,19 @@ public class UserServiceImpl implements UserService {
 				userMapper.update(loginUser);
 			}
 			try {
-				loginFlg = PBKDF2Util.verifyPassword(entryUser.getPassword(),loginUser.getPassword(), loginUser.getSalt());
+				loginFlg = PBKDF2Util.verifyPassword(entryUser.getPassword(), loginUser.getPassword(),
+						loginUser.getSalt());
 			} catch (Exception e) {
 				throw new ApplicationException(ErrorCode.SYSTEM_ERROR);
 			}
 		}
-		if(loginFlg) {
+		if (loginFlg) {
 			return loginUser;
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public List<User> findAll() {
 		return userMapper.findAllUser();
@@ -74,12 +73,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User register(User user) {
-		String hashPassword=null;
+		String hashPassword = null;
 		Integer userId = userMapper.count();
-		if(userId!=null) {
-			user.setUserId(userId+1);
-		}
-		else {
+		if (userId != null) {
+			user.setUserId(userId + 1);
+		} else {
 			user.setUserId(1);
 		}
 		byte[] salt = PBKDF2Util.generateSalt();
@@ -88,19 +86,24 @@ public class UserServiceImpl implements UserService {
 		} catch (Exception e) {
 			throw new ApplicationException(ErrorCode.SYSTEM_ERROR);
 		}
+		String mailAddress = user.getMailAddress();
+
+		if (userMapper.countByMailAddress(mailAddress) > 0) {
+			throw new ApplicationException(ErrorCode.EXIST_MAILADDRESS);
+		}
 		user.setRole("user");
 		user.setPassword(hashPassword);
 		user.setSalt(salt);
 		userMapper.insert(user);
 		return user;
 	}
-	
+
 	/**
 	 * 複数ユーザ登録処理(セキュリティの観点からパスワード登録はCSVから読込しない,権限は全て"user"にする)
 	 */
-	public Paginated<User> registerMultiple(List<User>userList) {
-		for(User user : userList) {
-			if(user.getUserId()==null) {
+	public Paginated<User> registerMultiple(List<User> userList) {
+		for (User user : userList) {
+			if (user.getUserId() == null) {
 				user.setUserId(1);
 			}
 			user.setRole("user");
@@ -112,14 +115,20 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User update(String checkedId, User user) {
 		Integer userId = Integer.parseInt(checkedId);
-		String hashPassword=null;
+		String hashPassword = null;
 		byte[] salt = PBKDF2Util.generateSalt();
-		//ソルト取得処理
+		// ソルト取得処理
 		try {
 			hashPassword = PBKDF2Util.hashPassword(user.getPassword(), salt);
 		} catch (Exception e) {
 			throw new ApplicationException(ErrorCode.SYSTEM_ERROR);
 		}
+
+		String mailAddress = user.getMailAddress();
+		if (userMapper.countByMailAddress(mailAddress) > 0) {
+			throw new ApplicationException(ErrorCode.EXIST_MAILADDRESS);
+		}
+
 		user.setUserId(userId);
 		user.setPassword(hashPassword);
 		user.setSalt(salt);
@@ -136,59 +145,59 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Paginated<User> sort(String page, String sortKey) {
 		List<User> userList = userMapper.findAllUser();
-		String[] getSortAction=new String[2];
+		String[] getSortAction = new String[2];
 		Comparator<User> comparator = null;
-		if(sortKey!=null){
+		if (sortKey != null) {
 			getSortAction = sortKey.split(",");
-		}else {
+		} else {
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		String sortAction=getSortAction[0];
-		String attribute=getSortAction[1];
-		switch(attribute) {
+		String sortAction = getSortAction[0];
+		String attribute = getSortAction[1];
+		switch (attribute) {
 		case "userId":
-			comparator = Comparator.comparing(User::getUserId, Comparator.naturalOrder()); 
+			comparator = Comparator.comparing(User::getUserId, Comparator.naturalOrder());
 			break;
 		case "userName":
-			comparator = Comparator.comparing(User::getUserName, Comparator.naturalOrder()); 
+			comparator = Comparator.comparing(User::getUserName, Comparator.naturalOrder());
 			break;
 		case "mailAddress":
-			comparator = Comparator.comparing(User::getMailAddress, Comparator.naturalOrder()); 
+			comparator = Comparator.comparing(User::getMailAddress, Comparator.naturalOrder());
 			break;
 		case "role":
-			comparator = Comparator.comparing(User::getRole, Comparator.naturalOrder()); 
+			comparator = Comparator.comparing(User::getRole, Comparator.naturalOrder());
 			break;
 		default:
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		if("DESC".equals(sortAction)) {
-			comparator=comparator.reversed();
+		if ("DESC".equals(sortAction)) {
+			comparator = comparator.reversed();
 		}
-		userList=Util.sort(userList, comparator);
+		userList = Util.sort(userList, comparator);
 		return Util.pagenation(userList, page);
 	}
 
 	@Override
-	public Paginated<User> search(String page,String searchValue) {
+	public Paginated<User> search(String page, String searchValue) {
 		List<User> userList = userMapper.findAllUser();
-		String[] getFilterAction=new String[2];
-		if(searchValue!=null){
+		String[] getFilterAction = new String[2];
+		if (searchValue != null) {
 			getFilterAction = searchValue.split(",");
-		}else {
+		} else {
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		String entryValue=getFilterAction[0].replaceAll("\\u3000| ","").toUpperCase();
-		String attribute=getFilterAction[1];
-		Function<User,String> func = null;
-		switch(attribute) {
+		String entryValue = getFilterAction[0].replaceAll("\\u3000| ", "").toUpperCase();
+		String attribute = getFilterAction[1];
+		Function<User, String> func = null;
+		switch (attribute) {
 		case "userName":
-			func=User::getUserName;
+			func = User::getUserName;
 			break;
 		default:
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		userList=Util.search(userList, entryValue,func);
-		if(userList.isEmpty()) {
+		userList = Util.search(userList, entryValue, func);
+		if (userList.isEmpty()) {
 			userList = userMapper.findAllUser();
 		}
 		return Util.pagenation(userList, page);
@@ -197,24 +206,24 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Paginated<User> filter(String page, String filterValue) {
 		List<User> userList = userMapper.findAllUser();
-		String[] getFilterAction=new String[2];
-		if(filterValue!=null){
+		String[] getFilterAction = new String[2];
+		if (filterValue != null) {
 			getFilterAction = filterValue.split(",");
-		}else {
+		} else {
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		String entryValue=getFilterAction[0];
-		String attribute=getFilterAction[1];
-		Function<User,String> func = null;
-		switch(attribute) {
+		String entryValue = getFilterAction[0];
+		String attribute = getFilterAction[1];
+		Function<User, String> func = null;
+		switch (attribute) {
 		case "role":
-			func=User::getRole;
+			func = User::getRole;
 			break;
 		default:
 			throw new ApplicationException(ErrorCode.INVALID_INPUT);
 		}
-		userList=Util.filter(userList, entryValue,func);
-		if(userList.isEmpty()) {
+		userList = Util.filter(userList, entryValue, func);
+		if (userList.isEmpty()) {
 			userList = userMapper.findAllUser();
 		}
 		return Util.pagenation(userList, page);
@@ -223,22 +232,20 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Combi<Paginated<User>> selectUser(String page, String operation, String checkedId) {
 		List<User> userList = userMapper.findAllUser();
-		Action action=null;
-    	String nextForm=null;
-    	
+		Action action = null;
+		String nextForm = null;
+
 		action = Action.form(operation);
-		switch(action) {
+		switch (action) {
 		case REGISTER_FORM:
 			nextForm = "userRegister";
 			break;
 		case UPDATE_FORM:
-			Optional.ofNullable(checkedId)
-					.orElseThrow(()->new ApplicationException(ErrorCode.CHOOSE_ONLY_ONE));
+			Optional.ofNullable(checkedId).orElseThrow(() -> new ApplicationException(ErrorCode.CHOOSE_ONLY_ONE));
 			nextForm = "userUpdate";
 			break;
 		case DELETE_FORM:
-			Optional.ofNullable(checkedId)
-					.orElseThrow(()->new ApplicationException(ErrorCode.CHOOSE_ONLY_ONE));
+			Optional.ofNullable(checkedId).orElseThrow(() -> new ApplicationException(ErrorCode.CHOOSE_ONLY_ONE));
 			nextForm = "userDelete";
 			break;
 		case CSV_IMPORT_FORM:
@@ -247,67 +254,66 @@ public class UserServiceImpl implements UserService {
 		default:
 			break;
 		}
-		
+
 		Paginated<User> pagenated = Util.pagenation(userList, page);
-		return new Combi<Paginated<User>>(nextForm,pagenated);
+		return new Combi<Paginated<User>>(nextForm, pagenated);
 	}
+
 	/**
-	 * CSVエクスポート処理
-	 * 全件取得、DTOに詰めなおし後CSVファイルを取得
-	 * @throws ApplicationException 
+	 * CSVエクスポート処理 全件取得、DTOに詰めなおし後CSVファイルを取得
+	 * 
+	 * @throws ApplicationException
 	 */
 	public byte[] exportCsv() {
 		List<User> userList = userMapper.findAllUser();
-		if(userList.isEmpty()) {
+		if (userList.isEmpty()) {
 			throw new ApplicationException(ErrorCode.LIST_IS_EMPTY);
 		}
-	    List<CSVUser> csvList = userList.stream().map(
-	        e -> new CSVUser(e.getUserId(), e.getUserName(),e.getMailAddress(),e.getRole())
-	    ).collect(Collectors.toList());
-		return CSVDownload.getCsvFile(csvList,CSVUser.class);
+		List<CSVUser> csvList = userList.stream()
+				.map(e -> new CSVUser(e.getUserId(), e.getUserName(), e.getMailAddress(), e.getRole()))
+				.collect(Collectors.toList());
+		return CSVDownload.getCsvFile(csvList, CSVUser.class);
 	}
-	
+
 	/**
-	 * CSVインポート処理
-	 * ユーザIDが重複していた場合、(DB、CSVのID)の最大値+1したものを新しいIDとして振り直す
+	 * CSVインポート処理 ユーザIDが重複していた場合、(DB、CSVのID)の最大値+1したものを新しいIDとして振り直す
 	 * パスワードは仮としてUUIDを設定、すぐ変えるよう案内する
 	 */
 	public Combi<List<User>> importCsv(MultipartFile file) {
-		List<CSVUser> csvBeforeList = CSVUpload.csvUpload(file,CSVUser.class);
+		List<CSVUser> csvBeforeList = CSVUpload.csvUpload(file, CSVUser.class);
 		List<User> csvList = new ArrayList<>();
-		
-		for(CSVUser e : csvBeforeList) {
-			//ここで詰め替え作業、1件ごとに異なるランダム値生成
+
+		for (CSVUser e : csvBeforeList) {
+			// ここで詰め替え作業、1件ごとに異なるランダム値生成
 			UUID uuid = UUID.randomUUID();
 			Random rand = new Random();
-			String password = String.valueOf(uuid).substring(0,rand.nextInt(16 - 8 + 1) + 8);
-			csvList.add(new User(e.getUserId(), e.getUserName(),e.getMailAddress(),password,e.getRole(),null));
+			String password = String.valueOf(uuid).substring(0, rand.nextInt(16 - 8 + 1) + 8);
+
+			// メールアドレスチェック
+			if (userMapper.countByMailAddress(e.getMailAddress()) > 0) {
+				throw new ApplicationException(ErrorCode.EXIST_MAILADDRESS);
+			}
+			csvList.add(new User(e.getUserId(), e.getUserName(), e.getMailAddress(), password, e.getRole(), null));
 		}
-		
+
 		List<User> userList = userMapper.findAllUser();
-		
+
 		int updateCnt = 0;
-		int csvMaxId = csvList.stream()
-		        .map(User::getUserId)
-		        .max(Integer::compare)
-		        .orElse(0);
-		int newUserId=Math.max(userMapper.count(),csvMaxId)+1;
-		Set<Integer> usedUserIds = userList.stream()
-										.map(User::getUserId)
-										.collect(Collectors.toSet());
+		int csvMaxId = csvList.stream().map(User::getUserId).max(Integer::compare).orElse(0);
+		int newUserId = Math.max(userMapper.count(), csvMaxId) + 1;
+		Set<Integer> usedUserIds = userList.stream().map(User::getUserId).collect(Collectors.toSet());
 		for (User user : csvList) {
-		    Integer userId = user.getUserId();
-		    if (usedUserIds.contains(userId)) {
-		    	user.setUserId(newUserId);
-			    usedUserIds.add(newUserId);
-		        updateCnt++;
-		        newUserId++;
-		    }
-		    else {
-			    usedUserIds.add(userId);
-		    }
+			Integer userId = user.getUserId();
+			if (usedUserIds.contains(userId)) {
+				user.setUserId(newUserId);
+				usedUserIds.add(newUserId);
+				updateCnt++;
+				newUserId++;
+			} else {
+				usedUserIds.add(userId);
+			}
 		}
-		Combi<List<User>>result = new Combi<>();
+		Combi<List<User>> result = new Combi<>();
 		result.setKey(String.valueOf(updateCnt));
 		result.setData(csvList);
 		return result;

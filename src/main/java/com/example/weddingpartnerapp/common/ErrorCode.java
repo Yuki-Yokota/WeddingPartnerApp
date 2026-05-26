@@ -11,6 +11,7 @@ public enum ErrorCode {
 	FILE_NOT_READ,
 	FILE_NOT_WRITE,
 	LIST_IS_EMPTY,
-    INVALID_DATA;
+    INVALID_DATA,
+    EXIST_MAILADDRESS
 }
 

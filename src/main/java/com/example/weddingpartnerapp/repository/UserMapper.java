@@ -14,6 +14,7 @@ public interface UserMapper {
 	List<User> findAllUser();
 	void insert(User user);
 	Integer count();
+	Integer countByMailAddress(@Param("mailAddress")String mailAddress);
 	User findById(@Param("userId")Integer userId);
 	void update(User user);
 	void delete(@Param("userId") Integer userId);
