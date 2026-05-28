@@ -5,19 +5,22 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.weddingpartnerapp.common.ApplicationException;
 import com.example.weddingpartnerapp.model.ErrorCombi;
 
-@RestControllerAdvice
+@ControllerAdvice
 public class ExceptionController {
 
     @ExceptionHandler(ApplicationException.class)
+    @ResponseBody
     public ResponseEntity<Object> exceptionHandler(ApplicationException e) {
     	List<ErrorCombi>error = new ArrayList<>();
     	error.add(new ErrorCombi("err",e.getMessage()));
@@ -26,6 +29,7 @@ public class ExceptionController {
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
     public ResponseEntity<Object> ValidExceptionHandler(MethodArgumentNotValidException e) {
     	List<ErrorCombi>error = new ArrayList<>();
     	BindingResult result = e.getBindingResult();
@@ -40,11 +44,10 @@ public class ExceptionController {
     
    
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGeneralException(Exception e) {
-    	List<ErrorCombi>error = new ArrayList<>();
-    	error.add(new ErrorCombi("err","予期せぬエラーが発生しました。"));
+    public String handleGeneralException(Model model,Exception e) {
+    	model.addAttribute("error","予期せぬエラーが発生しました。");
         //log.error(e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        return "login";
     }
 	
 }
