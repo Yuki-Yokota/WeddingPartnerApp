@@ -51,7 +51,7 @@ public class MailUtil {
 
             javaMailSender.send(message);
             
-        } catch(MessagingException e) {
+        } catch(Exception e) {
         	throw new ApplicationException(ErrorCode.NOT_SENDMAIL);
         }
 		
