@@ -12,15 +12,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.weddingpartnerapp.common.ApplicationException;
 import com.example.weddingpartnerapp.model.ErrorCombi;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class ExceptionController {
 
     @ExceptionHandler(ApplicationException.class)
-    @ResponseBody
     public ResponseEntity<Object> exceptionHandler(ApplicationException e) {
     	List<ErrorCombi>error = new ArrayList<>();
     	error.add(new ErrorCombi("err",e.getMessage()));
@@ -29,7 +29,6 @@ public class ExceptionController {
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseBody
     public ResponseEntity<Object> ValidExceptionHandler(MethodArgumentNotValidException e) {
     	List<ErrorCombi>error = new ArrayList<>();
     	BindingResult result = e.getBindingResult();
