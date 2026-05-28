@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 	private UserMapper userMapper;
 
 	@Override
-	public User authenticate(User entryUser) {
+	public User authenticate(User entryUser) throws ApplicationException{
 		Optional<User> userOpt = userMapper.findUserByMailAddress(entryUser.getMailAddress());
 		User loginUser = new User();
 		String hashPassword = null;

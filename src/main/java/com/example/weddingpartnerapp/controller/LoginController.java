@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.weddingpartnerapp.common.ApplicationException;
 import com.example.weddingpartnerapp.model.CustomerDTO;
 import com.example.weddingpartnerapp.model.SessionUser;
 import com.example.weddingpartnerapp.model.User;
@@ -42,7 +43,13 @@ public class LoginController {
     		@RequestParam String password,
     		HttpSession session) {
     	User user = new User(null,null,mailAddress,password,null, null);
-    	user = userService.authenticate(user);
+    	
+    	try {
+    		user = userService.authenticate(user);
+    	}catch(ApplicationException e) {
+    		model.addAttribute("error", "予期せぬエラーが発生しています。管理者にご連絡ください");
+    		return "login";
+    	}
     	if(user!=null) {
     		SessionUser sessionUser = new SessionUser(user.getUserId(),user.getRole());
     		
@@ -54,7 +61,7 @@ public class LoginController {
         	
             return "home";
     	}else {
-    		
+    		model.addAttribute("error", "メールアドレスかパスワードが間違っています");
             return "login";
     	}
     	

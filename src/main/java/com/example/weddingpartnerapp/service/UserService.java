@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.weddingpartnerapp.common.ApplicationException;
 import com.example.weddingpartnerapp.model.Combi;
 import com.example.weddingpartnerapp.model.Paginated;
 import com.example.weddingpartnerapp.model.User;
@@ -31,6 +32,6 @@ public interface UserService {
 
 	Combi<List<User>> importCsv(MultipartFile file);
 
-	User authenticate(User user);
+	User authenticate(User user) throws ApplicationException;
 
 }
