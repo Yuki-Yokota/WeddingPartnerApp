@@ -1,9 +1,14 @@
 package com.example.weddingpartnerapp.common;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,23 +65,19 @@ public class MailUtil {
 	 */
 	public String getMailTemplate(String url){
 		String content=null;
-		File resource = null;
-	    try {
-			resource = new ClassPathResource(url).getFile();
-		} catch (IOException e) {
+		StringBuilder sb = new StringBuilder();
+		try (InputStream is = new ClassPathResource(url).getInputStream();
+			     BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+			
+			List<String> lines = reader.lines().collect(Collectors.toList());
+			
+			for (String s : lines) {
+				sb.append(s);
+			}
+		}catch (IOException e) {
 			throw new ApplicationException(ErrorCode.FILE_NOT_FOUND);
 		}
 
-		List<String> line;
-		StringBuilder sb = new StringBuilder();
-		try {
-			line = Files.readAllLines(resource.toPath());
-			for (String s : line) {
-				sb.append(s);
-			}
-		} catch (IOException e) {
-			throw new ApplicationException(ErrorCode.FILE_NOT_READ);
-		}
 		content=sb.toString();
 		return content;
 	}
