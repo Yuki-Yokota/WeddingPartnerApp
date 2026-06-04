@@ -46,7 +46,7 @@ public class ExceptionController {
     public ResponseEntity<Object> handleGeneralException(Model model,Exception e) {
     	List<ErrorCombi>error = new ArrayList<>();
     	error.add(new ErrorCombi("err","予期せぬエラーが発生しています。管理者にご連絡ください"));
-        //log.error(e.getMessage(), e);
+    	e.printStackTrace();        //log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 	
