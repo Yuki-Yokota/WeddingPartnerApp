@@ -25,9 +25,9 @@ import com.example.weddingpartnerapp.model.ResendPayload;
 @PropertySource(value = "classpath:mailcustom_ja.properties", encoding = "UTF-8")
 public class MailUtil {
 
-//	@Value("${mailcustom.sendfrom}")
-//	private String sendFrom;
-//	
+	@Value("${mailcustom.sendfrom}")
+	private String sendFrom;
+	
 	@Value("${mailcustom.title}")
 	private String title;
 
@@ -39,6 +39,10 @@ public class MailUtil {
 
 	/**
 	 * メールを送信する
+	 * 1.ヘッダーの作成時Resendで生成したAPIキーを仕込む
+	 * 2.送信データの設定。無料プランの初期状態では、送信元(from)は "onboarding@resend.dev" 固定
+	 *   送信先(to)は、Resendに登録した自分のmailアドレス宛てのみテスト送信可能(ドメイン登録すると制限解除？)
+	 * 3.APIにリクエストを送信！（443番ポートなのでRenderでも100%通る）
 	 * 
 	 * @param checkedId
 	 * @param sendToMailAddress
@@ -50,20 +54,16 @@ public class MailUtil {
 		RestTemplate restTemplate = new RestTemplate();
 		String url = "https://api.resend.com/emails";
 
-		// 1. ヘッダーの作成（APIキーを仕込む）
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", "Bearer " + apiKey);
 
-		// 2. 送信データの設定
-		// 💡 無料プランの初期状態では、送信元(from)は "onboarding@resend.dev" 固定
-		// 💡 送信先(to)は、Resendに登録した自分のmailアドレス宛てのみテスト送信可能(ドメイン登録すると制限解除？)
-		ResendPayload payload = new ResendPayload("onboarding@resend.dev", sendToMailAddress, title, html);
+//		ResendPayload payload = new ResendPayload("onboarding@resend.dev", sendToMailAddress, title, html);
+		ResendPayload payload = new ResendPayload(sendFrom, sendToMailAddress, title, html);
 
 		HttpEntity<ResendPayload> request = new HttpEntity<>(payload, headers);
 
 		try {
-			// 3. APIにリクエストを送信！（443番ポートなのでRenderでも100%通る）
 			restTemplate.postForEntity(url, request, String.class);
 		} catch (Exception e) {
 			throw new ApplicationException(ErrorCode.NOT_SENDMAIL);
